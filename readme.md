@@ -1,9 +1,8 @@
 ## General overview
-This container pulls and builds the latest stable version of ffmpeg and dependencies, from git repos when available and relevant. This part is heavily inspired by jrottenberg's docker files on ffmpeg.
-The container will also pull sickbeard_mp4_automator from mdhiggins, with the necessary python dependencies.
+This container pulls and builds the latest stable version of ffmpeg and dependencies, from git repos when available and relevant. This part is *heavily* inspired by [jrottenberg's docker files on ffmpeg](https://github.com/jrottenberg/ffmpeg).
+The container will also pull [sickbeard_mp4_automator from mdhiggins](https://github.com/mdhiggins/sickbeard_mp4_automator), with the necessary python dependencies.
 The container is meant to use manual.py (the manual script for converting .mkv to .mp4 in sickbeard_mp4_automator).
 The container exposes the following volumes :
-
 * /config, which contains autoProcess.ini, the main configuration file for sickbeard_mp4_automator
 * /downloads, for convenience
 * /videos, for convenience.
