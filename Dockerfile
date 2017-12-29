@@ -2,18 +2,21 @@ FROM alpine:latest
 
 # Install build deps
 
-RUN apk  add --no-cache --update libgcc libstdc++ ca-certificates libcrypto1.0 libssl1.0 libgomp expat
-
 ARG        PKG_CONFIG_PATH=/usr/lib/pkgconfig
 ARG        LD_LIBRARY_PATH=/usr/lib
 ARG        PREFIX=/usr
 ARG        MAKEFLAGS="-j4"
-
-ENV        MYUSERID=1001
-ENV        MYGROUPID=1001
-ENV        MYLOCALTIME="Europe/Paris"
+ENV 		   PATH $PATH:/automator
+ENV 		   WATCHFOLDER='/downloads/watchfolder'
 
 RUN apk add --no-cache --update \
+	libgcc \ 
+	libstdc++ \
+	ca-certificates \
+	libcrypto1.0 \
+	libssl1.0 \
+	libgomp \
+	expat \
 	autoconf \
 	automake \
 	binutils \
@@ -24,6 +27,7 @@ RUN apk add --no-cache --update \
 	g++ \
 	gcc \
 	gperf \
+	git \
 	libtool \
 	make \
 	python \
@@ -36,7 +40,8 @@ RUN apk add --no-cache --update \
 	texinfo \
 	diffutils \
 	curl \
-	mercurial
+	mercurial \
+	inotify-tools
 
 WORKDIR /tmp
 
@@ -92,17 +97,14 @@ RUN  \
         rm -rf ${DIR}
  
 ## fridibi https://www.fribidi.org/
-RUN  \
-        FRIBIDI_VERSION=0.19.7 && \
-        DIR=/tmp/fribidi && \
-        mkdir -p ${DIR} && \
-        cd ${DIR} && \
-        curl -sLO http://fribidi.org/download/fribidi-${FRIBIDI_VERSION}.tar.bz2 &&\
-        tar -jx --strip-components=1 -f fribidi-${FRIBIDI_VERSION}.tar.bz2 && \
-        ./configure -prefix="${PREFIX}" --disable-static --enable-shared && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
+RUN \
+		MAKEFLAGS="-j1" && \
+		rm -rf /tmp/fribidi && \
+    		git clone https://github.com/fribidi/fribidi.git fribidi && \
+    		cd /tmp/fribidi && \
+		./bootstrap -c && \
+		./configure --disable-static --enable-shared --prefix=${PREFIX} && \
+		make install
 
 ## fontconfig https://www.freedesktop.org/wiki/Software/fontconfig/
 RUN  \
@@ -118,89 +120,71 @@ RUN  \
         rm -rf ${DIR}
 
 ## libass https://github.com/libass/libass
-RUN  \
-	LIBASS_VERSION=0.13.7 && \
-        DIR=/tmp/libass && \
-        mkdir -p ${DIR} && \
-        cd ${DIR} && \
-        curl -sLO https://github.com/libass/libass/archive/${LIBASS_VERSION}.tar.gz &&\
-        tar -zx --strip-components=1 -f ${LIBASS_VERSION}.tar.gz && \
+RUN  \        
+        git clone https://github.com/libass/libass.git libass && \
+        cd libass && \
         ./autogen.sh && \
         ./configure -prefix="${PREFIX}" --disable-static --enable-shared && \
         make && \
-        make install && \
-        rm -rf ${DIR}
+        make install
 
 
 ## openjpeg https://github.com/uclouvain/openjpeg
 RUN \
-        OPENJPEG_VERSION=2.1.2 && \
-        DIR=/tmp/openjpeg && \
-        mkdir -p ${DIR} && \
-        cd ${DIR} && \
-        curl -sL https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz | \
-        tar -zx --strip-components=1 && \
+        git clone https://github.com/uclouvain/openjpeg.git openjpeg && \
+        cd openjpeg && \
         cmake -DBUILD_THIRDPARTY:BOOL=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" . && \
         make && \
-        make install && \
-        rm -rf ${DIR}
+        make install
 
-RUN apk add --no-cache --update git
 ### libogg https://www.xiph.org/ogg/
 RUN \
-        DIR=/tmp/ogg && \
-	git clone https://github.com/xiph/ogg.git && \
-	ls /tmp && \
-        cd ${DIR} && \
-        ./autogen.sh && ./configure --prefix="${PREFIX}" --enable-shared  && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
+	git clone https://github.com/xiph/ogg.git ogg && \
+	cd ogg && \
+    ./autogen.sh && ./configure --prefix="${PREFIX}" --enable-shared  && \
+    make && \
+    make install
 
 ### libvorbis https://xiph.org/vorbis/
 RUN \
-        DIR=/tmp/vorbis && \
-	git clone https://github.com/xiph/vorbis.git && \
-	cd ${DIR} && \
-        ./autogen.sh && ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
+	git clone https://github.com/xiph/vorbis.git vorbis && \
+	cd vorbis && \
+    ./autogen.sh && ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared && \
+    make && \
+    make install
 
 
 ### libtheora http://www.theora.org/
 RUN \
-        DIR=/tmp/theora && \
-	git clone https://github.com/xiph/theora.git && \
-        cd ${DIR} && \
-        ./autogen.sh && ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
+	git clone https://github.com/xiph/theora.git theora && \
+    cd theora && \
+    ./autogen.sh && ./configure --prefix="${PREFIX}" --with-ogg="${PREFIX}" --enable-shared && \
+    make && \
+    make install
 
 
 # Opus
 RUN \
 	git clone https://github.com/xiph/opus && \
-       	cd opus && \
+	cd opus && \
 	autoreconf -fiv && \
-       	./configure --prefix="${PREFIX}" --enable-shared && \
-       	make && \
-       	make install
+	./configure --prefix="${PREFIX}" --enable-shared && \
+	make && \
+	make install
 
 # xvid
 RUN \
 	XVID_VERSION=1.3.4 && \
-        DIR=/tmp/xvid && \
-        mkdir -p ${DIR} && \
-        cd ${DIR} && \
-        curl -sLO http://downloads.xvid.org/downloads/xvidcore-${XVID_VERSION}.tar.gz && \
-        tar -zx -f xvidcore-${XVID_VERSION}.tar.gz && \
-        cd xvidcore/build/generic && \
-        ./configure --prefix="${PREFIX}" --bindir="${PREFIX}/bin" --datadir="${DIR}" --enable-shared --enable-shared && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
+    DIR=/tmp/xvid && \
+    mkdir -p ${DIR} && \
+    cd ${DIR} && \
+    curl -sLO http://downloads.xvid.org/downloads/xvidcore-${XVID_VERSION}.tar.gz && \
+    tar -zx -f xvidcore-${XVID_VERSION}.tar.gz && \
+    cd xvidcore/build/generic && \
+    ./configure --prefix="${PREFIX}" --bindir="${PREFIX}/bin" --datadir="${DIR}" --enable-shared --enable-shared && \
+    make && \
+    make install && \
+    rm -rf ${DIR}
 
 # X264
 RUN \
@@ -302,22 +286,25 @@ RUN \
  	cd /automator && cp autoProcess.ini.sample autoProcess.ini && \
 	rm -Rf /tmp/*
 
-RUN apk add openrc && \
-        sed -i '/tty/d' /etc/inittab && \
-		sed -i 's/#rc_sys=""/rc_sys="docker"/g' /etc/rc.conf && \
-		echo 'rc_provide="loopback net"' >> /etc/rc.conf && \
-		sed -i 's/^#\(rc_logger="YES"\)$/\1/' /etc/rc.conf && \
-		sed -i 's/hostname $opts/# hostname $opts/g' /etc/init.d/hostname && \
-		sed -i 's/mount -t tmpfs/# mount -t tmpfs/g' /lib/rc/sh/init.sh && \
-		sed -i 's/cgroup_add_service /# cgroup_add_service /g' /lib/rc/sh/openrc-run.sh && \
-		rm -f hwclock hwdrivers modules modules-load modloop
+ADD https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.1/s6-overlay-amd64.tar.gz /tmp/
+RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C /
 
-ADD https://raw.githubusercontent.com/phtagn/docker_mp4_automator/master/Mkv2mp4%20Docker/myinit.sh /etc/init.d/myinit
-ENV PATH $PATH:/automator
 RUN \
-	chmod +x /etc/init.d/myinit && \
-	rc-update add myinit default
+	groupmod -g 1000 users && \
+	useradd -u 911 -U -d /config -s /bin/false abc && \
+	usermod -G users abc && \
+	mkdir -p /config
+
+
+COPY rootfs/ /
+
+RUN 	chmod +x /etc/cont-init.d/01-createuser.sh && \
+	chmod +x /etc/services.d/watchfolder/run && \
+	chmod +x /etc/fix-attrs.d/01-automator.sh && \
+	mkdir /var/log/watchfolder && \
+	chown nobody:nogroup /var/log/watchfolder
 
 WORKDIR /automator
 VOLUME /downloads /videos /config
-ENTRYPOINT  ["/sbin/init"]
+
+ENTRYPOINT  ["/init"]
