@@ -6,8 +6,8 @@ ARG        PKG_CONFIG_PATH=/usr/lib/pkgconfig
 ARG        LD_LIBRARY_PATH=/usr/lib
 ARG        PREFIX=/usr
 ARG        MAKEFLAGS="-j4"
-ENV 		   PATH $PATH:/automator
-ENV 		   WATCHFOLDER='/downloads/watchfolder'
+ENV        PATH $PATH:/automator
+ENV 	   WATCHFOLDER='/downloads/watchfolder'
 
 RUN apk add --no-cache --update \
 	libgcc \ 
@@ -100,8 +100,8 @@ RUN  \
 RUN \
 		MAKEFLAGS="-j1" && \
 		rm -rf /tmp/fribidi && \
-    		git clone https://github.com/fribidi/fribidi.git fribidi && \
-    		cd /tmp/fribidi && \
+    	git clone https://github.com/fribidi/fribidi.git fribidi && \
+    	cd /tmp/fribidi && \
 		./bootstrap -c && \
 		./configure --disable-static --enable-shared --prefix=${PREFIX} && \
 		make install
@@ -186,14 +186,6 @@ RUN \
     make install && \
     rm -rf ${DIR}
 
-# X264
-RUN \
-	git clone http://git.videolan.org/git/x264.git && \
-	cd x264 && \
-	./configure --prefix="${PREFIX}" --enable-shared --enable-pic --disable-cli && \
-	make ${MAKEFLAGS} && \
-	make install
-
 # fdk-aac
 RUN \
 	git clone https://github.com/mstorsjo/fdk-aac.git fdk-aac && \
@@ -232,6 +224,15 @@ RUN \
     make && \
     make install && \
     rm -rf ${DIR} 
+
+# X264 - Latest version from git does not compile at the moment
+RUN \
+	git clone http://git.videolan.org/git/x264.git && \
+	cd x264 && \
+	./configure --prefix="${PREFIX}" --enable-shared --enable-pic --disable-cli && \
+	make ${MAKEFLAGS} && \
+	make install
+
 
 RUN \
 	git clone https://github.com/ffmpeg/ffmpeg && \
@@ -278,8 +279,16 @@ RUN LD_LIBRARY_PATH=/usr/lib ffmpeg -buildconf
 
 RUN rm -Rf /tmp/*
 
-RUN pip install requests requests[security] requests-cache "stevedore==1.19.1" babelfish "guessit<2" "subliminal<2" qtfaststart deluge-client
-
+RUN pip install \
+    requests \
+    requests[security] \
+    requests-cache \
+    "stevedore==1.19.1" \
+    babelfish \
+    "guessit<2" \
+    "subliminal<2" \
+    qtfaststart \
+    deluge-client
 
 RUN \
  	git clone https://github.com/mdhiggins/sickbeard_mp4_automator.git /automator && \
@@ -290,6 +299,7 @@ ADD https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.1/s6
 RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C /
 
 RUN \
+    apk add --no-cache shadow && \
 	groupmod -g 1000 users && \
 	useradd -u 911 -U -d /config -s /bin/false abc && \
 	usermod -G users abc && \
@@ -303,6 +313,22 @@ RUN 	chmod +x /etc/cont-init.d/01-createuser.sh && \
 	chmod +x /etc/fix-attrs.d/01-automator.sh && \
 	mkdir /var/log/watchfolder && \
 	chown nobody:nogroup /var/log/watchfolder
+
+RUN apk del \
+	autoconf \
+	automake \
+	binutils \
+	cmake \
+	g++ \
+	gcc \
+	gperf \
+	git \
+	make \
+	openssl-dev \
+	yasm \
+	texinfo \
+	diffutils \
+	mercurial
 
 WORKDIR /automator
 VOLUME /downloads /videos /config

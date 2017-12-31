@@ -10,9 +10,9 @@ if [ ! -f /config/autoProcess.ini ]; then
 fi
 
 if [ ! -f /config/info.log ]; then
-touch /automator/info.log
-ln -sf /automator/info.log /config/log
+    touch /automator/info.log
+    ln -sf /automator/info.log /config/log
 fi
 
-chown abc:abc /config
-chown abc:abc /automator
+chown abc:abc -R /config
+chown abc:abc -R /automator

@@ -1,10 +1,10 @@
 #!/usr/bin/with-contenv bash
-EXCLUDE="@.*|\.QTFS|\.mp4"
+EXCLUDE="@.*|\.QTFS"
 [ -d $WATCHFOLDER ] || mkdir -p $WATCHFOLDER
 
-inotifywait -q -m --excludei $EXCLUDE -e modify -e close_write --format '%f' $WATCHFOLDER | while read FILE; do
+inotifywait -q -m --excludei $EXCLUDE -e moved_to -e close_write --format '%f' $WATCHFOLDER | while read FILE; do
 	echo "Added $FILE"
-    if [ ${FILE: -4} == ".mkv" ]; then  	
+    if [ ${FILE: -4} == ".mkv" ] || [ ${FILE: -4} == ".mp4" ]; then
     	echo "Converting $FILE"
     s6-setuidgid abc /automator/manual.py -c '/config/autoProcess.ini' -a -i "${WATCHFOLDER}/${FILE}"
 	fi
