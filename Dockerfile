@@ -225,9 +225,9 @@ RUN \
     make install && \
     rm -rf ${DIR} 
 
-# X264 - Latest version from git does not compile at the moment
+# X264 - 
 RUN \
-	git clone http://git.videolan.org/git/x264.git && \
+	git clone https://git.videolan.org/git/x264.git && \
 	cd x264 && \
 	./configure --prefix="${PREFIX}" --enable-shared --enable-pic --disable-cli && \
 	make ${MAKEFLAGS} && \
