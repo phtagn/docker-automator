@@ -99,10 +99,9 @@ RUN  \
 ## fridibi https://www.fribidi.org/
 RUN \
 		MAKEFLAGS="-j1" && \
-		rm -rf /tmp/fribidi && \
     	git clone https://github.com/fribidi/fribidi.git fribidi && \
     	cd /tmp/fribidi && \
-		./bootstrap -c && \
+		./autogen.sh --disable-docs && \
 		./configure --disable-static --enable-shared --prefix=${PREFIX} && \
 		make install
 
