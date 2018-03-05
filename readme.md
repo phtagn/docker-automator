@@ -12,4 +12,4 @@ The container exposes the following volumes :
 
 ## Usage
 
-docker run -e WATCHFOLDER=/PATH-TO-WATCHFODLER -v PATH-TO-CONFIG-DIR:/config -v PATH-TO-DOWNLOADS-DIR:/downloads -v PATH-TO-VIDEO-DIR:/videos -d --name automator phtagn/docker_mp4_automator 
+docker run -e WATCHFOLDER=/PATH-TO-WATCHFOLDER -v PATH-TO-CONFIG-DIR:/config -v PATH-TO-DOWNLOADS-DIR:/downloads -v PATH-TO-VIDEO-DIR:/videos -d --name automator phtagn/docker_mp4_automator 

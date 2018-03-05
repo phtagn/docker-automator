@@ -8,6 +8,7 @@ ARG        PREFIX=/usr
 ARG        MAKEFLAGS="-j4"
 ENV        PATH $PATH:/automator
 ENV 	   WATCHFOLDER='/downloads/watchfolder'
+ENV        SERVER_PORT='7080'
 
 RUN apk add --no-cache --update \
 	libgcc \ 
@@ -41,7 +42,8 @@ RUN apk add --no-cache --update \
 	diffutils \
 	curl \
 	mercurial \
-	inotify-tools
+	inotify-tools \
+	py-twisted
 
 WORKDIR /tmp
 
@@ -102,8 +104,8 @@ RUN \
 		rm -rf /tmp/fribidi && \
     	git clone https://github.com/fribidi/fribidi.git fribidi && \
     	cd /tmp/fribidi && \
-		./bootstrap -c && \
-		./configure --disable-static --enable-shared --prefix=${PREFIX} && \
+		./autogen.sh --disable-docs && \
+		./configure --disable-static --enable-shared --disable-docs --prefix=${PREFIX} && \
 		make install
 
 ## fontconfig https://www.freedesktop.org/wiki/Software/fontconfig/
@@ -288,10 +290,11 @@ RUN pip install \
     "guessit<2" \
     "subliminal<2" \
     qtfaststart \
-    deluge-client
+    deluge-client \
+    Twisted
 
 RUN \
- 	git clone https://github.com/mdhiggins/sickbeard_mp4_automator.git /automator && \
+ 	git clone -b server https://github.com/phtagn/sickbeard_mp4_automator.git/ /automator && \
  	cd /automator && cp autoProcess.ini.sample autoProcess.ini && \
 	rm -Rf /tmp/*
 
@@ -332,5 +335,5 @@ RUN apk del \
 
 WORKDIR /automator
 VOLUME /downloads /videos /config
-
+EXPOSE 7080
 ENTRYPOINT  ["/init"]
