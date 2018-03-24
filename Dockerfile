@@ -9,6 +9,11 @@ ARG        MAKEFLAGS="-j4"
 ENV        PATH $PATH:/automator
 ENV 	   WATCHFOLDER='/downloads/watchfolder'
 ENV        SERVER_PORT='7080'
+ENV        PUID='911'
+ENV        PGID='1000'
+ENV        GITSERVER='https://github.com/phtagn/sickbeard_mp4_automator.git/'
+ENV        AUTOUPDATE='true'
+ENV        GITBRANCH='server'
 
 RUN apk add --no-cache --update \
 	libgcc \ 
@@ -293,29 +298,25 @@ RUN pip install \
     deluge-client \
     Twisted
 
-RUN \
- 	git clone -b server https://github.com/phtagn/sickbeard_mp4_automator.git/ /automator && \
- 	cd /automator && cp autoProcess.ini.sample autoProcess.ini && \
-	rm -Rf /tmp/*
+#RUN \
+# 	git clone -b server https://github.com/phtagn/sickbeard_mp4_automator.git/ /automator
 
-ADD https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.1/s6-overlay-amd64.tar.gz /tmp/
+
+ADD https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-amd64.tar.gz /tmp/
 RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C /
 
 RUN \
     apk add --no-cache shadow && \
-	groupmod -g 1000 users && \
-	useradd -u 911 -U -d /config -s /bin/false abc && \
+	groupmod -g ${PGID} users && \
+	useradd -u ${PUID} -U -d /config -s /bin/false abc && \
 	usermod -G users abc && \
-	mkdir -p /config
-
+	mkdir -p /config && \
+	mkdir /automator
 
 COPY rootfs/ /
 
-RUN 	chmod +x /etc/cont-init.d/01-createuser.sh && \
-	chmod +x /etc/services.d/watchfolder/run && \
-	chmod +x /etc/fix-attrs.d/01-automator.sh && \
-	mkdir /var/log/watchfolder && \
-	chown nobody:nogroup /var/log/watchfolder
+RUN \
+	rm -Rf /tmp/*
 
 RUN apk del \
 	autoconf \
@@ -325,7 +326,6 @@ RUN apk del \
 	g++ \
 	gcc \
 	gperf \
-	git \
 	make \
 	openssl-dev \
 	yasm \
@@ -334,6 +334,5 @@ RUN apk del \
 	mercurial
 
 WORKDIR /automator
-VOLUME /downloads /videos /config
 EXPOSE 7080
 ENTRYPOINT  ["/init"]

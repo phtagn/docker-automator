@@ -1,3 +1,1 @@
-with-contenv
-/automator true abc,$PUID:$PGID
-/config true abc,$PUID:$PGID
+/var/log/server true nobody,32768:32768 0644 2700

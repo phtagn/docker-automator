@@ -1,3 +1,2 @@
 #!/usr/bin/with-contenv bash
-#python /automator/server.py
-
+exec s6-setuidgid abc /usr/bin/python /automator/server.py

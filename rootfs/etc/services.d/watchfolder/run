@@ -6,6 +6,6 @@ inotifywait -q -m --excludei $EXCLUDE -e moved_to -e close_write --format '%f' $
 	echo "Added $FILE"
     if [ ${FILE: -4} == ".mkv" ] || [ ${FILE: -4} == ".mp4" ]; then
     	echo "Converting $FILE"
-    s6-setuidgid -D abc:abc /automator/manual.py -c '/config/autoProcess.ini' -a -i "${WATCHFOLDER}/${FILE}"
+    exec s6-setuidgid abc /automator/manual.py -c '/config/autoProcess.ini' -a -i "${WATCHFOLDER}/${FILE}"
 	fi
 done
