@@ -14,6 +14,7 @@ ENV        PGID='1000'
 ENV        GITSERVER='https://github.com/phtagn/sickbeard_mp4_automator.git/'
 ENV        AUTOUPDATE='true'
 ENV        GITBRANCH='server'
+ENV        MP4PORT='7080'
 
 RUN apk add --no-cache --update \
 	libgcc \ 
